@@ -7,6 +7,3 @@ class Failure(dict):
 
 class Success(dict):
     pass
-
-class IntegrityError(Exception):
-    pass

@@ -1,7 +1,8 @@
 import typing
 import sqlite3
 from injector import singleton, inject
-from aardvark_api.types import Configuration, IntegrityError
+from aardvark_api.types import Configuration
+from aardvark_api.exceptions import IntegrityError
 
 def dict_factory(cursor, row):
     d = {}

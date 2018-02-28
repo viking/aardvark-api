@@ -1,7 +1,7 @@
 import typing
 from injector import singleton, inject
 from aardvark_api.adapter import Adapter
-from aardvark_api.entity import Package
+from aardvark_api.package import Package
 
 @singleton
 class PackageRepository:
