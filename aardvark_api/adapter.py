@@ -51,9 +51,15 @@ class Adapter:
             where = ""
         else:
             where = " WHERE {}".format(' AND '.join(['{0} = :{0}'.format(key) for key in conditions.keys()]))
+
+        query = f"SELECT * FROM {table_name}{where}"
         with self.db() as db:
             db.row_factory = dict_factory
             cur = db.cursor()
-            cur.execute("SELECT * FROM {}{}".format(table_name, where), conditions)
-            return curr.fetchall()
+            if conditions is None:
+                cur.execute(query)
+            else:
+                cur.execute(query, conditions)
+
+            return cur.fetchall()
 

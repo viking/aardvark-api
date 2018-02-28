@@ -20,4 +20,4 @@ class PackageRepository:
         return package
 
     def find(self, conditions=None) -> typing.List[Package]:
-        return [Package(v) for v in self.adapter.find("packages", conditions)]
+        return [Package(**v) for v in self.adapter.find("packages", conditions)]

@@ -10,18 +10,20 @@ class Router:
     def __init__(self, package_controller: PackageController):
         self.package_controller = package_controller
         self.routes = (
-            (re.compile("^/packages/?$"), package_controller.create),
+            ("POST", re.compile("^/packages/?$"), package_controller.create),
+            ("GET", re.compile("^/packages/?$"), package_controller.index),
         )
 
     def route(self, environ, start_response):
+        method = environ['REQUEST_METHOD']
         path = environ['PATH_INFO']
 
         status = '404 Not Found'
         headers = []
         response = []
         for route in self.routes:
-            if route[0].match(path):
-                result = route[1](environ, start_response)
+            if route[0] == method and route[1].match(path):
+                result = route[2](environ, start_response)
                 if isinstance(result, Success):
                     status = '200 OK'
                 else:

@@ -92,3 +92,14 @@ class CreatePackage:
         finally:
             tf.close()
             tmpdir.cleanup()
+
+@singleton
+class ListPackages:
+    @inject
+    def __init__(self, repo: PackageRepository):
+        self.repo = repo
+
+    def run(self) -> dict:
+        packages = self.repo.find()
+        packages = [dict(name = package.name, version = package.version) for package in packages]
+        return dict(packages = packages)
