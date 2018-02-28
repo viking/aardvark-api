@@ -6,15 +6,15 @@ from injector import singleton, inject
 from aardvark_api.repository import PackageRepository
 from aardvark_api.types import Configuration, Success, Failure
 from aardvark_api.exceptions import IntegrityError, InvalidPackageError
-from aardvark_api.package import PackageProcessor
+from aardvark_api.package import PackageFactory
 
 @singleton
 class CreatePackage:
     @inject
-    def __init__(self, config: Configuration, repo: PackageRepository, processor: PackageProcessor):
+    def __init__(self, config: Configuration, repo: PackageRepository, factory: PackageFactory):
         self.config = config
         self.repo = repo
-        self.processor = processor
+        self.factory = factory
 
     def run(self, stream, length) -> dict:
         tmpdir = TemporaryDirectory()
@@ -29,14 +29,14 @@ class CreatePackage:
                 pos += amount
 
         try:
-            package = self.processor.tarball(upload_filename)
+            package = self.factory.from_tarball(upload_filename)
         except InvalidPackageError as err:
             tmpdir.cleanup()
             return Failure(file = str(err))
 
         package.filename = os.path.join(
             self.config["package_path"],
-            f"{package.name}-{package.version}.tar")
+            f"{package.name}-{package.version}.tar.gz")
         shutil.copy(upload_filename, package.filename)
 
         try:

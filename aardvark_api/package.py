@@ -11,14 +11,14 @@ class Package:
         self.version = kwargs.get('version', None)
         self.filename = kwargs.get('filename', None)
 
-class PackageProcessor:
-    def tarball(self, filename) -> Package:
+class PackageFactory:
+    def from_tarball(self, filename) -> Package:
         # make sure file is a tarball
         if not tarfile.is_tarfile(filename):
             raise InvalidPackageError('The file is not a tarball.')
 
         # check for DESCRIPTION file
-        tf = tarfile.open(filename)
+        tf = tarfile.open(filename, "r:gz")
         try:
             package_name = None
             tf_contents = []
