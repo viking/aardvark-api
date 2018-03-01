@@ -31,7 +31,7 @@ class Adapter:
                 version = row[0]
 
             if version < 1:
-                cur.execute("CREATE TABLE packages (id INT PRIMARY KEY, name VARCHAR(50), version VARCHAR(50), filename VARCHAR(255))")
+                cur.execute("CREATE TABLE packages (id INT PRIMARY KEY, name VARCHAR(50), version VARCHAR(50), dependencies VARCHAR(255), filename VARCHAR(255))")
                 cur.execute("CREATE UNIQUE INDEX packages_name_version ON packages (name, version)")
                 cur.execute("INSERT INTO schema_info (version) VALUES (1)")
 

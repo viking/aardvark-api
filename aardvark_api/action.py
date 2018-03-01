@@ -41,7 +41,10 @@ class CreatePackage:
 
         try:
             package = self.repo.create(package)
-            return Success(name = package.name, version = package.version)
+            return Success(
+                name = package.name,
+                version = package.version,
+                dependencies = package.dependencies)
 
         except IntegrityError as error:
             os.remove(package.filename)
@@ -58,5 +61,9 @@ class ListPackages:
 
     def run(self) -> dict:
         packages = self.repo.find()
-        packages = [dict(name = package.name, version = package.version) for package in packages]
+        packages = [{
+            'name': package.name,
+            'version': package.version,
+            'dependencies': package.dependencies
+        } for package in packages]
         return dict(packages = packages)

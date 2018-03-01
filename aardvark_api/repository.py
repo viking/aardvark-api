@@ -1,4 +1,5 @@
 import typing
+import json
 from injector import singleton, inject
 from aardvark_api.adapter import Adapter
 from aardvark_api.package import Package
@@ -13,6 +14,7 @@ class PackageRepository:
         values = {
             'name': package.name,
             'version': package.version,
+            'dependencies': json.dumps(package.dependencies),
             'filename': package.filename
         }
         record_id = self.adapter.create("packages", values)
@@ -20,4 +22,8 @@ class PackageRepository:
         return package
 
     def find(self, conditions=None) -> typing.List[Package]:
-        return [Package(**v) for v in self.adapter.find("packages", conditions)]
+        result = []
+        for values in self.adapter.find("packages", conditions):
+            values['dependencies'] = json.loads(values['dependencies'])
+            result.append(Package(**values))
+        return result
