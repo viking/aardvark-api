@@ -1,12 +1,13 @@
 import os
 import shutil
+import typing
 from tempfile import TemporaryDirectory
 from injector import singleton, inject
 
 from aardvark_api.repository import PackageRepository
 from aardvark_api.types import Configuration, Success, Failure, Stream, NotFound
 from aardvark_api.exceptions import IntegrityError, InvalidPackageError
-from aardvark_api.package import PackageFactory
+from aardvark_api.package import Package, PackageFactory
 from aardvark_api.util import UrlBuilder
 
 @singleton
@@ -64,15 +65,33 @@ class ListPackages:
         self.repo = repo
         self.url_builder = url_builder
 
-    def run(self) -> dict:
-        packages = self.repo.find()
-        packages = [{
+    def process(self, packages: typing.List[Package]) -> typing.List[dict]:
+        result = [{
             'name': package.name,
             'version': package.version,
             'dependencies': package.dependencies,
             'url': self.url_builder.package_url(package)
         } for package in packages]
-        return Success(packages = packages)
+        return Success(packages = result)
+
+    def run(self) -> dict:
+        packages = self.repo.find()
+        return self.process(packages)
+
+@singleton
+class SearchPackages(ListPackages):
+    def run(self, conditions) -> dict:
+        if not conditions is None:
+            if not isinstance(conditions, dict):
+                return Failure(conditions = "must be an object")
+
+            expected_keys = {"name", "version"}
+            keys = set(conditions.keys())
+            if len(keys - expected_keys) > 0:
+                return Failure(conditions = "contain invalid keys")
+
+        packages = self.repo.find(conditions)
+        return self.process(packages)
 
 @singleton
 class DownloadPackage:

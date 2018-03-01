@@ -22,6 +22,11 @@ class Router:
                 package_controller.index
             ),
             (
+                "POST",
+                re.compile(r"^/packages/search$"),
+                package_controller.search
+            ),
+            (
                 "GET",
                 re.compile(r"^/packages/(?P<name>\w+)_(?P<version>\d+(?:[-.]\d+)*).tar.gz$"),
                 package_controller.download
