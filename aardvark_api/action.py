@@ -7,14 +7,17 @@ from aardvark_api.repository import PackageRepository
 from aardvark_api.types import Configuration, Success, Failure, Stream, NotFound
 from aardvark_api.exceptions import IntegrityError, InvalidPackageError
 from aardvark_api.package import PackageFactory
+from aardvark_api.util import UrlBuilder
 
 @singleton
 class CreatePackage:
     @inject
-    def __init__(self, config: Configuration, repo: PackageRepository, factory: PackageFactory):
+    def __init__(self, config: Configuration, repo: PackageRepository,
+            factory: PackageFactory, url_builder: UrlBuilder):
         self.config = config
         self.repo = repo
         self.factory = factory
+        self.url_builder = url_builder
 
     def run(self, stream, length) -> dict:
         tmpdir = TemporaryDirectory()
@@ -22,7 +25,7 @@ class CreatePackage:
         with open(upload_filename, 'wb') as f:
             pos = 0
             while pos < length:
-                amount = 4096
+                amount = 8192
                 if amount > (length - pos):
                     amount = length - pos
                 f.write(stream.read(amount))
@@ -44,7 +47,8 @@ class CreatePackage:
             return Success(
                 name = package.name,
                 version = package.version,
-                dependencies = package.dependencies)
+                dependencies = package.dependencies,
+                url = self.url_builder.package_url(package))
 
         except IntegrityError as error:
             os.remove(package.filename)
@@ -56,15 +60,17 @@ class CreatePackage:
 @singleton
 class ListPackages:
     @inject
-    def __init__(self, repo: PackageRepository):
+    def __init__(self, repo: PackageRepository, url_builder: UrlBuilder):
         self.repo = repo
+        self.url_builder = url_builder
 
     def run(self) -> dict:
         packages = self.repo.find()
         packages = [{
             'name': package.name,
             'version': package.version,
-            'dependencies': package.dependencies
+            'dependencies': package.dependencies,
+            'url': self.url_builder.package_url(package)
         } for package in packages]
         return Success(packages = packages)
 

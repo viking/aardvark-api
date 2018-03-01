@@ -23,7 +23,7 @@ class Router:
             ),
             (
                 "GET",
-                re.compile(r"^/packages/(?P<name>\w+)/(?P<version>\d+(?:[-.]\d+)*)/download$"),
+                re.compile(r"^/packages/(?P<name>\w+)_(?P<version>\d+(?:[-.]\d+)*).tar.gz$"),
                 package_controller.download
             )
         )
