@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 from injector import singleton, inject
 
 from aardvark_api.repository import PackageRepository
-from aardvark_api.types import Configuration, Success, Failure
+from aardvark_api.types import Configuration, Success, Failure, Stream, NotFound
 from aardvark_api.exceptions import IntegrityError, InvalidPackageError
 from aardvark_api.package import PackageFactory
 
@@ -36,7 +36,7 @@ class CreatePackage:
 
         package.filename = os.path.join(
             self.config["package_path"],
-            f"{package.name}-{package.version}.tar.gz")
+            f"{package.name}_{package.version}.tar.gz")
         shutil.copy(upload_filename, package.filename)
 
         try:
@@ -66,4 +66,23 @@ class ListPackages:
             'version': package.version,
             'dependencies': package.dependencies
         } for package in packages]
-        return dict(packages = packages)
+        return Success(packages = packages)
+
+@singleton
+class DownloadPackage:
+    @inject
+    def __init__(self, repo: PackageRepository):
+        self.repo = repo
+
+    def run(self, name: str, version: str) -> dict:
+        packages = self.repo.find(dict(name = name, version = version))
+        if len(packages) == 0:
+            return NotFound()
+
+        package = packages[0]
+        filename = package.filename
+        return Stream(
+            stream = open(filename, 'rb'),
+            size = os.path.getsize(filename),
+            filename = f"{package.name}_{package.version}.tar.gz",
+            mime_type = "application/x-gzip")
