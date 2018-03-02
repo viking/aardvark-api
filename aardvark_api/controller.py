@@ -1,6 +1,7 @@
 import json
 from injector import singleton, inject
 from aardvark_api.action import CreatePackage, ListPackages, SearchPackages, DownloadPackage
+from aardvark_api.types import Failure
 
 class PackageController:
     @inject

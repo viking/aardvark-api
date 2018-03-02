@@ -90,6 +90,10 @@ class SearchPackages(ListPackages):
             if len(keys - expected_keys) > 0:
                 return Failure(conditions = "contain invalid keys")
 
+            for key in conditions:
+                if not isinstance(conditions[key], str):
+                    return Failure(conditions = { key: "must be a string" })
+
         packages = self.repo.find(conditions)
         return self.process(packages)
 
